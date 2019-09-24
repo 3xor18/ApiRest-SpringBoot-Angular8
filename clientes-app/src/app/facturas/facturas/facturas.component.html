@@ -1,0 +1,87 @@
+<div class="card bg-light">
+
+    <div class="card-header">{{titulo}}: {{factura.descripcion}}</div>
+    <div class="card-body">
+        <h4 class="card-title">
+            <a [routerLink]="['/cliente/ver']" class="btn btn-light btn-xs">&laquo;Volver</a>
+        </h4>
+
+        <form #facturaForm="ngForm">
+            <div class="form-group" *ngIf="factura.cliente">
+                <label for="cliente">Cliente</label>
+                <div class="col-sm-6">
+                    <input id="cliente" class="form-control" type="text" name="cliente"
+                        value="{{factura.cliente.nombre}} {{factura.cliente.apellido}}" disabled>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="descripcion">Descripcion</label>
+                <div class="col-sm-6">
+                    <input id="descripcion" class="form-control" type="text" name="descripcion"
+                        [(ngModel)]="factura.descripcion" required #descripcion="ngModel">
+                    <div class="alert alert-danger" *ngIf="descripcion.invalid && descripcion.touched">
+                        La Descripcion es Requierida!
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="observacion">Observacion</label>
+                <div class="col-sm-6">
+                    <textarea class="form-control" name="observacion" id="observacion" cols="30" rows="10"
+                        [(ngModel)]="factura.observacion"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="observacion">Detalle</label>
+                <div class="col-sm-6">
+                    <mat-form-field>
+                        <input type="text" placeholder="Añadir Producto" aria-label="Productos" matInput
+                            [formControl]="autoCompleteControl" [matAutocomplete]="auto">
+                        <mat-autocomplete #auto="matAutocomplete" [displayWith]="mostrarNombre"
+                            (optionSelected)="seleccionarProducto($event)">
+                            <mat-option *ngFor="let producto of productosFiltrados | async" [value]="producto">
+                                {{producto.nombre}}
+                            </mat-option>
+                        </mat-autocomplete>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="alert alert-info my-4" *ngIf="factura.items.length==0">
+                No existen Lineas Asignadas a la Factura!
+            </div>
+            <table class="table table-striped table-hover table-sm" *ngIf="factura.items.length>0">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Total</th>
+                        <th>Eliminar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of factura.items">
+                        <td>{{item.producto.nombre}}</td>
+                        <td>{{item.producto.precio}}</td>
+                        <td><input type="number" value="{{item.cantidad}}" class="form-control col-sm-4"
+                                (change)="actualizarCantidad(item.producto.id,$event)">
+                        </td>
+                        <td>{{item.calcularImporte()}}</td>
+                        <td><button class="btn btn-danger btn-sm" type="button"
+                                (click)="eliminarItemFactura(item.producto.id)">x</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <h5 class="float-right" *ngIf="factura.items.length>0">Gran Total: <span
+                    class="badge badge-secondary">{{factura.calcularGranTotal()}}</span> </h5>
+            <div class="form-group">
+                <div class="col-sm-6">
+                    <button type="submit" class="btn btn-xs btn-success" (click)="create()"
+                        [disabled]="facturaForm.form.invalid||factura.items.length==0">Guardar</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
